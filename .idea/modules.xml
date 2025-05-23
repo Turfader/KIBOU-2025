@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/KIBOU-2025.iml" filepath="$PROJECT_DIR$/KIBOU-2025.iml" group="KIBOU-2025" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="KIBOU-2025/app" />
+      <module fileurl="file://$PROJECT_DIR$/guest_science_library/guest_science_library.iml" filepath="$PROJECT_DIR$/guest_science_library/guest_science_library.iml" group="KIBOU-2025/guest_science_library" />
+      <module fileurl="file://$PROJECT_DIR$/kibo_rpc_api/kibo_rpc_api.iml" filepath="$PROJECT_DIR$/kibo_rpc_api/kibo_rpc_api.iml" group="KIBOU-2025/kibo_rpc_api" />
+    </modules>
+  </component>
+</project>

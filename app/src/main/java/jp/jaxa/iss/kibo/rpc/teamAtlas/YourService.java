@@ -2,6 +2,10 @@ package jp.jaxa.iss.kibo.rpc.teamAtlas;
 
 import android.util.Log;
 
+import org.opencv.core.Mat;
+
+import gov.nasa.arc.astrobee.types.Point;
+import gov.nasa.arc.astrobee.types.Quaternion;
 import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
 
 /**
@@ -20,12 +24,14 @@ public class YourService extends KiboRpcService {
         api.startMission();
 
         // Move to a point.
-        //Point point = new Point(10.9d, -9.92284d, 5.195d);
-        //Quaternion quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        //api.moveTo(point, quaternion, false);
+        Point point = new Point(10.9d, -9.72284d, 5.25d);
+        Quaternion quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
+        api.moveTo(point, quaternion, false);
 
         // Get a camera image.
-        //Mat image = api.getMatNavCam();
+        Mat image = api.getMatNavCam();
+        api.saveMatImage(image, "area1");
+
 
         /* ******************************************************************************** */
         /* Write your code to recognize the type and number of landmark items in each area! */
@@ -40,24 +46,45 @@ public class YourService extends KiboRpcService {
         /* **************************************************** */
 
         // When you move to the front of the astronaut, report the rounding completion.
-        //point = new Point(11.143d, -6.7607d, 4.9654d);
-        //quaternion = new Quaternion(0f, 0f, 0.707f, 0.707f);
-        //api.moveTo(point, quaternion, false);
-        //api.reportRoundingCompletion();
+        point = new Point(10.743d, -8.7607d, 4.6654d);
+        quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
+        api.moveTo(point, quaternion, false);
+
+        Mat image2 = api.getMatNavCam();
+        api.saveMatImage(image2, "area2");
+
+
+        point = new Point(10.73d, -7.7607d, 4.6654d);
+        quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
+        api.moveTo(point, quaternion, false);
+
+        Mat image3 = api.getMatNavCam();
+        api.saveMatImage(image3, "area3");
+
+
+        point = new Point(11.16d, -6.6607d, 4.9654d);
+        quaternion = new Quaternion(0f, 0f, 0, -1f);
+        api.moveTo(point, quaternion, false);
+
+        Mat image4 = api.getMatNavCam();
+        api.saveMatImage(image4, "area4");
 
         /* ********************************************************** */
         /* Write your code to recognize which target item the astronaut has. */
         /* ********************************************************** */
 
+        api.reportRoundingCompletion();
+
+
         // Let's notify the astronaut when you recognize it.
-        //api.notifyRecognitionItem();
+        api.notifyRecognitionItem();
 
         /* ******************************************************************************************************* */
         /* Write your code to move Astrobee to the location of the target item (what the astronaut is looking for) */
         /* ******************************************************************************************************* */
 
         // Take a snapshot of the target item.
-        //api.takeTargetItemSnapshot();
+        api.takeTargetItemSnapshot();
 
         Log.i(TAG, "Hello World from the log");
     }

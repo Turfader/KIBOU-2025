@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: artifacts:kibo_rpc_api:unspecified@jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/kibo_rpc_api/build/.transforms/e4552b0014a5520356c6c9311717357c/kibo_rpc_api-debug/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/kibo_rpc_api/build/.transforms/e4552b0014a5520356c6c9311717357c/kibo_rpc_api-debug/res" />
+      <root url="jar://$PROJECT_DIR$/kibo_rpc_api/build/.transforms/e4552b0014a5520356c6c9311717357c/kibo_rpc_api-debug/jars/libs/ff_msgs-0.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/kibo_rpc_api/build/.transforms/e4552b0014a5520356c6c9311717357c/kibo_rpc_api-debug/jars/libs/ros-1.0-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/kibo_rpc_api/build/.transforms/e4552b0014a5520356c6c9311717357c/kibo_rpc_api-debug/jars/libs/api-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
