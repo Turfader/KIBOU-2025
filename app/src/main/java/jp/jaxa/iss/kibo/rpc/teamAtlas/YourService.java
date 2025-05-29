@@ -29,14 +29,68 @@ public class YourService extends KiboRpcService {
 
         // astrobee starts at (9.815, -9.806, 4.293) w/ rotation (1, 0, 0, 0)
 
-        //// move to zone then to pic location; distance traveled in both cases the same
+        /*//// move thru oasis 2; score test
+        // move down first to not collide with oasis 1
+        Point point = new Point(9.815d, -9.5d, 4.946d);
+        Quaternion quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move into position for oasis 2
+        point = new Point(10.926d, -9.5d, 4.946d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move thru zone
+        point = new Point(10.926d, -8.449d, 4.946d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);*/
+
+        /*//// move thru oasis 3; score test
+        // move down first to not collide with oasis 1/2
+        Point point = new Point(9.815d, -8.45d, 4.946d);
+        Quaternion quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move into position for oasis 3
+        point = new Point(10.426d, -8.45d, 4.946d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move thru zone
+        point = new Point(10.426d, -7.399d, 4.946d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);*/
+
+        //// move thru oasis 4; score test
+        // move down first to not collide with oasis 1/2/3
+        Point point = new Point(9.815d, -7.4d, 4.426d);
+        Quaternion quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move into position for oasis 4
+        point = new Point(10.926d, -7.4d, 4.425d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
+        // move thru zone
+        point = new Point(10.926d, -6.349d, 4.425d);
+        //quaternion = new Quaternion(1f, 0f, 0f, 0f);
+        api.moveTo(point, quaternion, false);
 
 
+        api.reportRoundingCompletion();
+        api.notifyRecognitionItem();
+        api.takeTargetItemSnapshot();
+    }
 
-        // move to "middle" of zone
+    @Override
+    protected void runPlan2(){
+       // write your plan 2 here.
+
+        /*// move to "middle" of zone
         Point point = new Point(10.785d, -9.806d, 4.450d);
         Quaternion quaternion = new Quaternion(1f, 0f, 0f, 0f);
         api.moveTo(point, quaternion, false);
+
+
+        // move to camera spot
+        point = new Point(11.425d, -9.806d, 5.195d);
+        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
+        api.moveTo(point, quaternion, false);*/
 
         /* // move diagonal thru oasis 1
         point = new Point(11.426d, -9.806d, 4.975d);
@@ -63,20 +117,6 @@ public class YourService extends KiboRpcService {
         // output time taken
         long elapsed = (endTime - startTime)/1_000_000;
         Log.i(TAG, "Finished, approx. time taken (ms): " + elapsed);*/
-
-        // move to camera spot
-        point = new Point(11.425d, -9.806d, 5.195d);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        api.moveTo(point, quaternion, false);
-
-        api.reportRoundingCompletion();
-        api.notifyRecognitionItem();
-        api.takeTargetItemSnapshot();
-    }
-
-    @Override
-    protected void runPlan2(){
-       // write your plan 2 here.
     }
 
     @Override
