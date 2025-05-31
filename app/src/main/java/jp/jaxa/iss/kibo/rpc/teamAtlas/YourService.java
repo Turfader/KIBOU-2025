@@ -134,30 +134,41 @@ public class YourService extends KiboRpcService {
 
     // You can add your method.
     public void areaSet(int areaNum, float itemType){
-        Log.i(TAG, "Found item of type " + itemType + "in area " + areaNum);
+        Log.i(TAG, "Found item of type " + ((int) itemType) + " in area " + areaNum);
         switch ((int) itemType){
             case 1:
                 api.setAreaInfo(areaNum, "Treasure_box");
+                break;
             case 2:
                 api.setAreaInfo(areaNum, "coin");
+                break;
             case 3:
                 api.setAreaInfo(areaNum, "compass");
+                break;
             case 4:
                 api.setAreaInfo(areaNum, "crystal");
+                break;
             case 5:
                 api.setAreaInfo(areaNum, "diamond");
+                break;
             case 6:
                 api.setAreaInfo(areaNum, "emerald");
+                break;
             case 7:
                 api.setAreaInfo(areaNum, "key");
+                break;
             case 8:
                 api.setAreaInfo(areaNum, "letter");
+                break;
             case 9:
                 api.setAreaInfo(areaNum, "coral");
+                break;
             case 11:
                 api.setAreaInfo(areaNum, "shell");
+                break;
             case 12:
                 api.setAreaInfo(areaNum, "fossil");
+                break;
             default:
                 break;
         }
