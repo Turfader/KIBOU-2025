@@ -2,12 +2,14 @@ package jp.jaxa.iss.kibo.rpc.teamAtlas;
 
 import android.util.Log;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.ml.SVM;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,7 +46,7 @@ public class YourService extends KiboRpcService {
         Log.i(TAG, "Base Folder: " +  getFilesDir().getName());
         Log.i(TAG, "Base Folder: " +  getFilesDir().getPath());
         try {
-            S.findItems(image, 1, this);
+            S.findItems(image, 1, this, false);
         } catch (IOException e) {
 
         }
@@ -67,37 +69,41 @@ public class YourService extends KiboRpcService {
 
 
         // When you move to the front of the astronaut, report the rounding completion.
-        point = new Point(10.743d, -8.7607d, 4.6654d);
+        point = new Point(10.743d, -8.7607d, 4.5654d);
         quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
         api.moveTo(point, quaternion, false);
 
+
         Mat image2 = api.getMatNavCam();
+
+        image2 = new Mat(image2, new Rect(0,0, 960, 960));
         try {
-            S.findItems(image2, 2, this);
+            S.findItems(image2, 2, this, false);
         } catch (IOException e) {
         }
         api.saveMatImage(image2, "area2");
 
 
-        point = new Point(10.73d, -7.7607d, 4.6654d);
+        point = new Point(10.73d, -7.7607d, 4.5654d);
         quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
         api.moveTo(point, quaternion, false);
 
         Mat image3 = api.getMatNavCam();
+        image3 = new Mat(image3, new Rect(0,0, 960, 960));
         try {
-            S.findItems(image3, 3, this);
+            S.findItems(image3, 3, this, false);
         } catch (IOException e) {
         }
         api.saveMatImage(image3, "area3");
 
 
-        point = new Point(11.16d, -6.6607d, 4.9654d);
+        point = new Point(11.16d, -6.6607d, 5.2654d);
         quaternion = new Quaternion(0f, 0f, 1f, 0f);
         api.moveTo(point, quaternion, false);
 
         Mat image4 = api.getMatNavCam();
         try {
-            S.findItems(image4, 4, this);
+            S.findItems(image4, 4, this, false);
         } catch (IOException e) {
         }
         api.saveMatImage(image4, "area4");
@@ -105,8 +111,22 @@ public class YourService extends KiboRpcService {
         /* ********************************************************** */
         /* Write your code to recognize which target item the astronaut has. */
         /* ********************************************************** */
-
         api.reportRoundingCompletion();
+
+        point = new Point(11.16d, -6.8607d, 4.9654d);
+        quaternion = new Quaternion(0f, 0f, 0.707f, 0.707f);
+
+        api.moveTo(point, quaternion, false);
+
+
+
+        Mat image5 = api.getMatNavCam();
+        try {
+            S.findItems(image5, 5, this, true);
+        } catch (IOException e) {
+        }
+        api.saveMatImage(image5, "astronautItem");
+
 
 
         // Let's notify the astronaut when you recognize it.
@@ -133,46 +153,45 @@ public class YourService extends KiboRpcService {
     }
 
     // You can add your method.
-    public void areaSet(int areaNum, float itemType){
+    public void areaSet(int areaNum, float itemType, int itemNum){
         Log.i(TAG, "Found item of type " + ((int) itemType) + " in area " + areaNum);
         switch ((int) itemType){
             case 1:
-                api.setAreaInfo(areaNum, "Treasure_box");
+                api.setAreaInfo(areaNum, "treasure_box", itemNum);
                 break;
             case 2:
-                api.setAreaInfo(areaNum, "coin");
+                api.setAreaInfo(areaNum, "coin", itemNum);
                 break;
             case 3:
-                api.setAreaInfo(areaNum, "compass");
+                api.setAreaInfo(areaNum, "compass", itemNum);
                 break;
             case 4:
-                api.setAreaInfo(areaNum, "crystal");
+                api.setAreaInfo(areaNum, "crystal", itemNum);
                 break;
             case 5:
-                api.setAreaInfo(areaNum, "diamond");
+                api.setAreaInfo(areaNum, "diamond", itemNum);
                 break;
             case 6:
-                api.setAreaInfo(areaNum, "emerald");
+                api.setAreaInfo(areaNum, "emerald", itemNum);
                 break;
             case 7:
-                api.setAreaInfo(areaNum, "key");
+                api.setAreaInfo(areaNum, "key", itemNum);
                 break;
             case 8:
-                api.setAreaInfo(areaNum, "letter");
+                api.setAreaInfo(areaNum, "letter", itemNum);
                 break;
             case 9:
-                api.setAreaInfo(areaNum, "coral");
+                api.setAreaInfo(areaNum, "coral", itemNum);
                 break;
             case 11:
-                api.setAreaInfo(areaNum, "shell");
+                api.setAreaInfo(areaNum, "shell", itemNum);
                 break;
             case 12:
-                api.setAreaInfo(areaNum, "fossil");
+                api.setAreaInfo(areaNum, "fossil", itemNum);
                 break;
             default:
                 break;
         }
-        api.flashlightControlFront(0.5f);
     }
 
     public SVM getSVMFIle() throws IOException {
@@ -194,4 +213,57 @@ public class YourService extends KiboRpcService {
             return null;
         }
     }
+
+    public void GoToTreasure(int area) {
+        switch (area){
+            case 1:
+                Point point = new Point(10.9d, -9.72284d, 5.25d);
+                Quaternion quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
+                api.moveTo(point, quaternion, false);
+                break;
+            case 2:
+                point = new Point(10.743d, -8.7607d, 4.7654d);
+                quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
+                api.moveTo(point, quaternion, false);
+                break;
+            case 3:
+                point = new Point(10.73d, -7.7607d, 4.7654d);
+                quaternion = new Quaternion(-0.707f, 0f, 0.707f, 0f);
+                api.moveTo(point, quaternion, false);
+                break;
+            case 4:
+                point = new Point(11.16d, -6.6607d, 5.2654d);
+                quaternion = new Quaternion(0f, 0f, 1f, 0f);
+                api.moveTo(point, quaternion, false);
+                break;
+            default:
+                break;
+        }
+        Mat ma = api.getMatDockCam();
+        api.saveMatImage(ma, "FinalShot.png");
+    }
+
+    public void saveImage(Mat i, int area){
+        api.saveMatImage(i, "area" + area + "processed.png");
+    }
+
+    public Mat undistort(Mat i){
+        try{
+            Mat cMatrix = new Mat(3,3, CvType.CV_64F);
+            Mat cCoef = new Mat(1,5, CvType.CV_64F);
+            cMatrix.put(0,0, api.getNavCamIntrinsics()[0]);
+            cCoef.put(0,0, api.getNavCamIntrinsics()[1]);
+            cCoef.convertTo(cCoef, CvType.CV_64F);
+            Mat unI = new Mat();
+
+            Calib3d.undistort(i, unI, cMatrix, cCoef);
+
+            return unI;
+
+        }
+        catch(Exception e) {
+            return i;
+        }
+    }
+
 }

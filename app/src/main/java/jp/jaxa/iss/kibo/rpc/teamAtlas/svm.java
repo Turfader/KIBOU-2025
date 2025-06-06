@@ -14,7 +14,7 @@ import java.util.List;
 
 public class svm {
 
-    List<String> items = new ArrayList<String>();
+    int[] treasure = new int[5];
 
     private static Mat computeHOGFeatures(Mat img) {
         // HOG parameters (adjust as needed)
@@ -36,8 +36,9 @@ public class svm {
         return descriptors.reshape(1, 1); // Reshape to a single row
     }
 
-    public void findItems(Mat i,  int area, YourService s) throws IOException {
+    public void findItems(Mat i,  int area, YourService s, Boolean reportTreasure) throws IOException {
         SVM svm = s.getSVMFIle();
+        i = s.undistort(i);
         if (svm!=null) {
 
             Mat image = i;
@@ -58,6 +59,7 @@ public class svm {
             Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
             System.out.println(contours.size());
+            int[] numItem = new int[]{0,0,0,0,0,0,0,0,0,0,0,0,0};
 // Predict each contour
             for (MatOfPoint contour : contours) {
                 Rect rect = Imgproc.boundingRect(contour);
@@ -78,12 +80,41 @@ public class svm {
 
                     // Draw bounding box and label
                     if (label != 0f && label != 10.0f) {
-                        s.areaSet(area, label);
+                        if (reportTreasure == false && label != 4.0f && label != 5.0f && label != 6.0f) {
+                            numItem[(int) label]++;
+                        }
+                        if (label == 4.0f || label == 5.0f || label == 6.0f){
+                            treasure[area-1] = (int)label-3;
+                        }
+                        Imgproc.rectangle(image, rect, new Scalar(0, 255, 0), 2);
+                        Imgproc.putText(image, Float.toString(label), new Point(rect.x, rect.y + 15),
+                                Imgproc.FONT_HERSHEY_SIMPLEX, 0.6, new Scalar(0, 255, 0), 2);
                     }
 
 
                 }
             }
+            if (reportTreasure == false){
+                float label=0;
+                int biggestVal=0;
+                for (int j=0; j<numItem.length; j++){
+                    if (numItem[j]>biggestVal){
+                        label=j;
+                        biggestVal=numItem[j];
+                    }
+                }
+                if (biggestVal>0) {
+                    s.areaSet(area, label, biggestVal);
+                }
+            } else{
+                for(int j=0; j<treasure.length-1; j++){
+                    if (treasure[4] == treasure[j]){
+                        s.GoToTreasure(j+1);
+                        break;
+                    }
+                }
+            }
+            s.saveImage(image, area);
         }
 
 // Save the output
