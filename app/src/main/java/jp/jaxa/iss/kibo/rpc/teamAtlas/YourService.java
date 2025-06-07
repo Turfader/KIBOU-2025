@@ -88,9 +88,8 @@ public class YourService extends KiboRpcService {
 
         Mat image2 = api.getMatNavCam();
 
-        image2 = new Mat(image2, new Rect(0,0, 960, 960));
         try {
-            image = processImagePos(image, 2);
+            image2 = processImagePos(image2, 2);
         } catch (IOException e) {}
         try {
             S.findItems(image2, 2, this, false);
@@ -104,9 +103,8 @@ public class YourService extends KiboRpcService {
         api.moveTo(point, quaternion, false);
 
         Mat image3 = api.getMatNavCam();
-        image3 = new Mat(image3, new Rect(0,0, 960, 960));
         try {
-            image = processImagePos(image, 3);
+            image3 = processImagePos(image3, 3);
         } catch (IOException e) {}
         try {
             S.findItems(image3, 3, this, false);
@@ -121,7 +119,7 @@ public class YourService extends KiboRpcService {
 
         Mat image4 = api.getMatNavCam();
         try {
-            image = processImagePos(image, 4);
+            image4 = processImagePos(image4, 4);
         } catch (IOException e) {}
         try {
             S.findItems(image4, 4, this, false);
@@ -289,7 +287,7 @@ public class YourService extends KiboRpcService {
         Mat image32S = new Mat();
         image.convertTo(image32S, CvType.CV_8UC1);
 
-        Imgproc.Canny(image32S, image32S, 200, 200 * 2);
+        Imgproc.Canny(image32S, image32S, 100, 100 * 2);
 
         Mat h = new Mat();
         Imgproc.findContours(image32S, contours, h, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -352,7 +350,7 @@ public class YourService extends KiboRpcService {
         }
         System.out.println(shapes.size());
         Mat p = new Mat();
-        InputStream f = getAssets().open("paper.png");
+        InputStream f = getAssets().open("img/paper.png");
         File tempFile = File.createTempFile("paper", ".png");
         OutputStream fw = new FileOutputStream(tempFile, false);
         int read;
@@ -423,7 +421,13 @@ public class YourService extends KiboRpcService {
             Imgproc.cvtColor(image, image, Imgproc.COLOR_GRAY2RGB);
 
             Imgproc.circle(image, locales.get(papNum), 10, new Scalar(0, 0, 255), -1);
-            return new Mat(ogImage, bRect.get(papNum));
+            api.saveMatImage(image, "area" + area + "loc.png");
+
+            int pa = 20;
+
+            Rect r = new Rect(bRect.get(papNum).x-pa, bRect.get(papNum).y-pa, bRect.get(papNum).width+2*pa, bRect.get(papNum).height+2*pa);
+
+            return new Mat(ogImage, r);
         }
 
         return image;
