@@ -38,7 +38,7 @@ public class svm {
 
     public void findItems(Mat i,  int area, YourService s, Boolean reportTreasure) throws IOException {
         SVM svm = s.getSVMFIle();
-        i = s.undistort(i);
+        //i = s.undistort(i);
         if (svm!=null) {
 
             Mat image = i;
