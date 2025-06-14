@@ -18,15 +18,12 @@ public class svm {
 
     SVM svm;
 
-    public void loadSVM(YourService s) throws IOException {
-        svm = s.getSVMFIle();
-    }
     private static Mat computeHOGFeatures(Mat img) {
         // HOG parameters (adjust as needed)
         Size winSize = new Size(64, 64);
-        Size blockSize = new Size(8, 8);
-        Size blockStride = new Size(4, 4);
-        Size cellSize = new Size(4, 4);
+        Size blockSize = new Size(16, 16);
+        Size blockStride = new Size(8, 8);
+        Size cellSize = new Size(8, 8);
         int nbins = 9;
 
         // Initialize HOG descriptor
@@ -44,12 +41,11 @@ public class svm {
     public void findItems(Mat i,  int area, YourService s, Boolean reportTreasure) throws IOException {
         //i = s.undistort(i);
         if (svm!=null) {
-
             Mat oldImage = i.clone();
             if (!reportTreasure) {
                 i = s.processImagePos(i, area);
             } else{
-                i = s.undistort(i);
+                //i = s.undistort(i);
             }
             Mat image = i;
             if (image.empty()) {
@@ -66,7 +62,7 @@ public class svm {
 // Find contours
             List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
-            Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             System.out.println(contours.size());
             int[] numItem = new int[]{0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -115,8 +111,6 @@ public class svm {
                 }
                 if (biggestVal>0) {
                     s.areaSet(area, label, biggestVal);
-                } else{
-                    findItems2(oldImage, area, s, reportTreasure);
                 }
             } else{
                 for(int j=0; j<treasure.length-1; j++){
@@ -128,7 +122,6 @@ public class svm {
             }
             s.saveImage(image, area);
         }
-
 
 // Save the output
     }
@@ -153,7 +146,7 @@ public class svm {
 // Find contours
             List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
-            Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_TREE , Imgproc.CHAIN_APPROX_SIMPLE);
 
             System.out.println(contours.size());
             int[] numItem = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -205,13 +198,13 @@ public class svm {
                 }
             } else {
                 for (int j = 0; j < treasure.length - 1; j++) {
-                    if (treasure[4] == treasure[j]) {
+                    if (treasure[4] == treasure[j] && treasure[4]!=0) {
                         s.GoToTreasure(j + 1);
                         break;
                     }
                 }
             }
-            s.saveImage(image, area);
+            s.saveImage2(image, area);
         }
     }
 }

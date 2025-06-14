@@ -43,9 +43,16 @@ public class YourService extends KiboRpcService {
         api.startMission();
 
         svm S = new svm();
-        try {S.loadSVM(this); } catch (IOException e) { }
+
+        try {
+            S.svm = getSVMFIle();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Move to a point.
-        Point point = new Point(10.9d, -9.72284d, 5.25d);
+        Point point = new Point(10.9d, -9.72284d, 5.45d);
+        api.flashlightControlFront(0f);
         Quaternion quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
         api.moveTo(point, quaternion, false);
 
@@ -53,7 +60,9 @@ public class YourService extends KiboRpcService {
         Mat image = api.getMatNavCam();
         Log.i(TAG, "TookPhoto");
         Log.i(TAG, "Base Folder: " +  getFilesDir().getName());
-        Log.i(TAG, "Base Folder: " +  getFilesDir().getPath());
+        try {
+            image = processImagePos(image, 1);
+        } catch (IOException e) {}
         try {
             S.findItems(image, 1, this, false);
         } catch (IOException e) {
@@ -86,6 +95,9 @@ public class YourService extends KiboRpcService {
         Mat image2 = api.getMatNavCam();
 
         try {
+            image2 = processImagePos(image2, 2);
+        } catch (IOException e) {}
+        try {
             S.findItems(image2, 2, this, false);
         } catch (IOException e) {
         }
@@ -98,6 +110,9 @@ public class YourService extends KiboRpcService {
 
         Mat image3 = api.getMatNavCam();
         try {
+            image3 = processImagePos(image3, 3);
+        } catch (IOException e) {}
+        try {
             S.findItems(image3, 3, this, false);
         } catch (IOException e) {
         }
@@ -109,6 +124,9 @@ public class YourService extends KiboRpcService {
         api.moveTo(point, quaternion, false);
 
         Mat image4 = api.getMatNavCam();
+        try {
+            image4 = processImagePos(image4, 4);
+        } catch (IOException e) {}
         try {
             S.findItems(image4, 4, this, false);
         } catch (IOException e) {
@@ -126,7 +144,8 @@ public class YourService extends KiboRpcService {
 
         api.reportRoundingCompletion();
 
-        point = new Point(11.16d, -7.0607d, 4.9654d);
+        point = new Point(11.16d, -7.1607d, 4.9654d);
+
         quaternion = new Quaternion(0f, 0f, 0.707f, 0.707f);
 
         api.moveTo(point, quaternion, false);
@@ -258,14 +277,13 @@ public class YourService extends KiboRpcService {
     }
 
     Mat processImagePos(Mat image, int area) throws IOException {
-        image = undistort(image);
         if(image.empty() == true) {
             System.out.println("Error: no image found!");
         } else{
             System.out.println("Image found!");
         }
 
-        //api.saveMatImage(image , "area" + area + "pre");
+        api.saveMatImage(image , "area" + area + "pre");
 
         //System.out.println(image.size());
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -274,11 +292,12 @@ public class YourService extends KiboRpcService {
         Mat ogImage = image.clone();
         Mat image32S = new Mat();
         image.convertTo(image32S, CvType.CV_8UC1);
-
-        Imgproc.Canny(image32S, image32S, 400, 400 * 2, 5);
+        Imgproc.Canny(image32S, image32S, 200, 200 * 2, 5);
 
         Mat h = new Mat();
-        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_NONE);
+        Imgproc.Canny(image32S, image32S, 100, 100 * 2);
+
 
 
         System.out.println(contours.size());
@@ -295,7 +314,7 @@ public class YourService extends KiboRpcService {
             Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
             boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
             //System.out.println(boundRect[i].height);
-            if (boundRect[i].height*boundRect[i].width<10000){
+            if (boundRect[i].height<100){
                 boundRect[i].height=0;
                 boundRect[i].width=0;
             } else{
@@ -313,9 +332,7 @@ public class YourService extends KiboRpcService {
 
         Mat contourImg = new Mat(image32S.size(), CvType.CV_32SC1);
         for (int i = 0; i < contours.size(); i++) {
-            if (boundRect[i].height>0) {
-                Imgproc.drawContours(contourImg, contours, i, new Scalar(255, 255, 255), -1);
-            }
+            Imgproc.drawContours(contourImg, contours, i, new Scalar(255, 255, 255), -1);
             if (boundRect[i].height!=0){
                 //Imgproc.rectangle(contourImg, boundRect[i].tl(), boundRect[i].br(), new Scalar(255, 255, 255), 4);
             }
@@ -375,11 +392,15 @@ public class YourService extends KiboRpcService {
 
         int papNum=-1;
         double lowestSCore=1000;
+        int papNum2=-1;
+        double lowestSCore2=1000;
         for (int i = 0; i < shapes.size(); i++) {
             Mat s = shapes.get(i);
             //Imgcodecs.imwrite("Images/img" + i +".jpg", s);
             double pAcc = Imgproc.matchShapes(s, pImg,3,0);
             if (pAcc<lowestSCore){
+                lowestSCore2=lowestSCore;
+                papNum2=papNum;
                 lowestSCore=pAcc;
                 papNum=i;
             }
@@ -387,6 +408,12 @@ public class YourService extends KiboRpcService {
         }
 
         Log.i(TAG ,"Object " + papNum + " is the paper, with a score of " + lowestSCore);
+
+        org.opencv.core.Point center = new org.opencv.core.Point(640,480);
+
+        if (Math.abs(locales.get(papNum).x-center.x) > Math.abs(locales.get(papNum2).x-center.x)){
+            papNum=papNum2;
+        }
 
         if (papNum!=-1) {
             if (area == 1) {
@@ -430,6 +457,7 @@ public class YourService extends KiboRpcService {
                 r.height = r.height-21;
             }
 
+            ogImage = undistort(ogImage);
 
             return new Mat(ogImage, r);
         }
@@ -440,6 +468,9 @@ public class YourService extends KiboRpcService {
 
     public void saveImage(Mat i, int area){
         api.saveMatImage(i, "area" + area + "processed.png");
+    }
+    public void saveImage2(Mat i, int area){
+        api.saveMatImage(i, "area" + area + "processed2.png");
     }
 
     public Mat undistort(Mat i){
