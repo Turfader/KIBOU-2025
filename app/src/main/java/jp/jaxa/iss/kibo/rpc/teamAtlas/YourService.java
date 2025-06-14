@@ -302,7 +302,7 @@ public class YourService extends KiboRpcService {
             Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
             boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
             //System.out.println(boundRect[i].height);
-            if (boundRect[i].height*boundRect[i].width>10000){
+            if (boundRect[i].height*boundRect[i].width<10000){
                 boundRect[i].height=0;
                 boundRect[i].width=0;
             } else{
