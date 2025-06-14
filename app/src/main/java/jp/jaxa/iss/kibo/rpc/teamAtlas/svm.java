@@ -21,9 +21,9 @@ public class svm {
     private static Mat computeHOGFeatures(Mat img) {
         // HOG parameters (adjust as needed)
         Size winSize = new Size(64, 64);
-        Size blockSize = new Size(16, 16);
-        Size blockStride = new Size(8, 8);
-        Size cellSize = new Size(8, 8);
+        Size blockSize = new Size(8, 8);
+        Size blockStride = new Size(4, 4);
+        Size cellSize = new Size(4, 4);
         int nbins = 9;
 
         // Initialize HOG descriptor
@@ -40,6 +40,9 @@ public class svm {
 
     public void findItems(Mat i,  int area, YourService s, Boolean reportTreasure) throws IOException {
         //i = s.undistort(i);
+        if (svm==null){
+            svm = s.getSVMFIle();
+        }
         if (svm!=null) {
             Mat oldImage = i.clone();
             if (!reportTreasure) {
@@ -111,6 +114,8 @@ public class svm {
                 }
                 if (biggestVal>0) {
                     s.areaSet(area, label, biggestVal);
+                } else{
+                    findItems2(oldImage, area, s, reportTreasure);
                 }
             } else{
                 for(int j=0; j<treasure.length-1; j++){
@@ -124,6 +129,10 @@ public class svm {
         }
 
 // Save the output
+    }
+
+    public void loadSVM(YourService s) throws IOException {
+        svm = s.getSVMFIle();
     }
 
     public void findItems2(Mat i,  int area, YourService s, Boolean reportTreasure) throws IOException {

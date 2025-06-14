@@ -45,7 +45,7 @@ public class YourService extends KiboRpcService {
         svm S = new svm();
 
         try {
-            S.svm = getSVMFIle();
+            S.loadSVM(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,9 +60,7 @@ public class YourService extends KiboRpcService {
         Mat image = api.getMatNavCam();
         Log.i(TAG, "TookPhoto");
         Log.i(TAG, "Base Folder: " +  getFilesDir().getName());
-        try {
-            image = processImagePos(image, 1);
-        } catch (IOException e) {}
+        Log.i(TAG, "Base Folder: " +  getFilesDir().getPath());
         try {
             S.findItems(image, 1, this, false);
         } catch (IOException e) {
@@ -95,9 +93,6 @@ public class YourService extends KiboRpcService {
         Mat image2 = api.getMatNavCam();
 
         try {
-            image2 = processImagePos(image2, 2);
-        } catch (IOException e) {}
-        try {
             S.findItems(image2, 2, this, false);
         } catch (IOException e) {
         }
@@ -110,9 +105,6 @@ public class YourService extends KiboRpcService {
 
         Mat image3 = api.getMatNavCam();
         try {
-            image3 = processImagePos(image3, 3);
-        } catch (IOException e) {}
-        try {
             S.findItems(image3, 3, this, false);
         } catch (IOException e) {
         }
@@ -124,9 +116,6 @@ public class YourService extends KiboRpcService {
         api.moveTo(point, quaternion, false);
 
         Mat image4 = api.getMatNavCam();
-        try {
-            image4 = processImagePos(image4, 4);
-        } catch (IOException e) {}
         try {
             S.findItems(image4, 4, this, false);
         } catch (IOException e) {
@@ -295,8 +284,7 @@ public class YourService extends KiboRpcService {
         Imgproc.Canny(image32S, image32S, 200, 200 * 2, 5);
 
         Mat h = new Mat();
-        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_NONE);
-        Imgproc.Canny(image32S, image32S, 100, 100 * 2);
+        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
 
 
 
@@ -314,7 +302,7 @@ public class YourService extends KiboRpcService {
             Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
             boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
             //System.out.println(boundRect[i].height);
-            if (boundRect[i].height<100){
+            if (boundRect[i].height*boundRect[i].width>10000){
                 boundRect[i].height=0;
                 boundRect[i].width=0;
             } else{
@@ -393,7 +381,7 @@ public class YourService extends KiboRpcService {
         int papNum=-1;
         double lowestSCore=1000;
         int papNum2=-1;
-        double lowestSCore2=1000;
+        double lowestSCore2=1001;
         for (int i = 0; i < shapes.size(); i++) {
             Mat s = shapes.get(i);
             //Imgcodecs.imwrite("Images/img" + i +".jpg", s);
@@ -409,10 +397,14 @@ public class YourService extends KiboRpcService {
 
         Log.i(TAG ,"Object " + papNum + " is the paper, with a score of " + lowestSCore);
 
+        Log.i(TAG ,"Second Object " + papNum2 + " is also the paper, with a score of " + lowestSCore2);
+
         org.opencv.core.Point center = new org.opencv.core.Point(640,480);
 
-        if (Math.abs(locales.get(papNum).x-center.x) > Math.abs(locales.get(papNum2).x-center.x)){
-            papNum=papNum2;
+        if (papNum!=-1 && papNum2!=-1) {
+            if (Math.abs(locales.get(papNum).x - center.x) > Math.abs(locales.get(papNum2).x - center.x)) {
+                papNum = papNum2;
+            }
         }
 
         if (papNum!=-1) {
@@ -445,7 +437,7 @@ public class YourService extends KiboRpcService {
             Rect r = new Rect(bRect.get(papNum).x-pa, bRect.get(papNum).y-pa, bRect.get(papNum).width+2*pa, bRect.get(papNum).height+2*pa);
 
             if (r.x+r.width>ogImage.width()){
-                r.width = r.width-21;
+                r.width = r.width-22;
             }
             if (r.x<0){
                 r.x = 0;
@@ -454,7 +446,7 @@ public class YourService extends KiboRpcService {
                 r.y = 0;
             }
             if (r.y+r.height>ogImage.height()){
-                r.height = r.height-21;
+                r.height = r.height-22;
             }
 
             ogImage = undistort(ogImage);
