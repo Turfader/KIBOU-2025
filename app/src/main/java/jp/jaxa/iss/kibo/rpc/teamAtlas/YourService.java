@@ -284,7 +284,7 @@ public class YourService extends KiboRpcService {
         Imgproc.Canny(image32S, image32S, 200, 200 * 2, 5);
 
         Mat h = new Mat();
-        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
 
 
 
@@ -320,7 +320,9 @@ public class YourService extends KiboRpcService {
 
         Mat contourImg = new Mat(image32S.size(), CvType.CV_32SC1);
         for (int i = 0; i < contours.size(); i++) {
-            Imgproc.drawContours(contourImg, contours, i, new Scalar(255, 255, 255), -1);
+            if (boundRect[i].height>0) {
+                Imgproc.drawContours(contourImg, contours, i, new Scalar(255, 255, 255), -1);
+            }
             if (boundRect[i].height!=0){
                 //Imgproc.rectangle(contourImg, boundRect[i].tl(), boundRect[i].br(), new Scalar(255, 255, 255), 4);
             }
@@ -381,7 +383,7 @@ public class YourService extends KiboRpcService {
         int papNum=-1;
         double lowestSCore=1000;
         int papNum2=-1;
-        double lowestSCore2=1001;
+        double lowestSCore2=1000;
         for (int i = 0; i < shapes.size(); i++) {
             Mat s = shapes.get(i);
             //Imgcodecs.imwrite("Images/img" + i +".jpg", s);
