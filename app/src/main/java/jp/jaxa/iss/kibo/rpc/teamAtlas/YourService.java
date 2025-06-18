@@ -89,6 +89,13 @@ public class YourService extends KiboRpcService {
 
         api.takeTargetItemSnapshot();
 
+        // If none matched, pick a random one
+        if (area1[0] == 0 && area2[0] == 0 && area3[0] == 0 && area4[0] == 0) {
+            int randomArea = new Random().nextInt(4) + 1;
+            Log.i(TAG, "No treasure recognized, selecting random area: " + randomArea);
+            GoToTreasure(randomArea);
+        }
+
         Log.i(TAG, "Hello World from the log");
     }
 
@@ -182,5 +189,207 @@ public class YourService extends KiboRpcService {
         } catch(Exception e) {
             return i;
         }
+    }
+
+    class Vector3d {
+        double x, y, z;
+        Vector3d(double x, double y, double z) {
+            this.x = x; this.y = y; this.z = z;
+        }
+    }
+
+    Mat processImagePos(Mat image, int area) throws IOException {
+        if(image.empty() == true) {
+            System.out.println("Error: no image found!");
+        } else{
+            System.out.println("Image found!");
+        }
+
+        api.saveMatImage(image , "area" + area + "pre");
+
+        //System.out.println(image.size());
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        //Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2GRAY);
+
+        Mat ogImage = image.clone();
+        Mat image32S = new Mat();
+        image.convertTo(image32S, CvType.CV_8UC1);
+        Imgproc.Canny(image32S, image32S, 200, 200 * 2, 5);
+
+        Mat h = new Mat();
+        Imgproc.findContours(image32S, contours, h, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+
+
+
+        System.out.println(contours.size());
+
+        Mat drawing = Mat.zeros(image32S.size(), CvType.CV_8UC3);
+
+
+        MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
+        Rect[] boundRect = new Rect[contours.size()];
+        Point[] centers = new Point[contours.size()];
+
+        for (int i = 0; i < contours.size(); i++) {
+            contoursPoly[i] = new MatOfPoint2f();
+            Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
+            boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+            //System.out.println(boundRect[i].height);
+            if (boundRect[i].height*boundRect[i].width<10000){
+                boundRect[i].height=0;
+                boundRect[i].width=0;
+            } else{
+
+            }
+            centers[i] = new Point();
+        }
+
+
+        List<MatOfPoint> contoursPolyList = new ArrayList<>(contoursPoly.length);
+
+        for (MatOfPoint2f poly : contoursPoly) {
+            contoursPolyList.add(new MatOfPoint(poly.toArray()));
+        }
+
+        Mat contourImg = new Mat(image32S.size(), CvType.CV_32SC1);
+        for (int i = 0; i < contours.size(); i++) {
+            if (boundRect[i].height>0) {
+                Imgproc.drawContours(contourImg, contours, i, new Scalar(255, 255, 255), -1);
+            }
+            if (boundRect[i].height!=0){
+                //Imgproc.rectangle(contourImg, boundRect[i].tl(), boundRect[i].br(), new Scalar(255, 255, 255), 4);
+            }
+        }
+
+        List<Mat> shapes = new ArrayList<Mat>();
+        List<org.opencv.core.Point> locales = new ArrayList<org.opencv.core.Point>();
+        List<Rect> bRect = new ArrayList<Rect>();
+        for (int i = 0; i < contours.size(); i++) {
+            if (boundRect[i].height!=0){
+                if (i>0 && boundRect[i].x!=boundRect[i-1].x && boundRect[i].y!=boundRect[i-1].y) {
+                    Mat e = new Mat(contourImg, boundRect[i]);
+                    e.convertTo(e, CvType.CV_8UC1);
+                    //Imgproc.findContours(e, ep, new Mat(), Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+                    shapes.add(e);
+                    locales.add(new org.opencv.core.Point(boundRect[i].x + (boundRect[i].width/2.0), boundRect[i].y+ (boundRect[i].height/2.0)));
+                    bRect.add(boundRect[i]);
+                    //Imgproc.matchShapes(e,ex,1,0.0);
+                }
+
+            }
+        }
+        System.out.println(shapes.size());
+        Mat p = new Mat();
+        InputStream f = getAssets().open("img/paper.png");
+        File tempFile = File.createTempFile("paper", ".png");
+        OutputStream fw = new FileOutputStream(tempFile, false);
+        int read;
+        byte[] bytes = new byte[1024];
+        while ((read = f.read(bytes)) != -1){
+            fw.write(bytes, 0, read);
+        }
+        fw.close();
+        try {
+            p = Imgcodecs.imread(tempFile.getAbsolutePath());
+        } catch (Exception e){
+            Log.i(TAG, "Boowomp");
+            Log.i(TAG, e.toString());
+            return null;
+        }
+        p.convertTo(p, CvType.CV_8UC1);
+        Mat paper = new Mat();
+        Imgproc.Canny(p, paper, 500, 500 * 2);
+        Size sz = new Size(300,300);
+
+        List<MatOfPoint> contoursC = new ArrayList<MatOfPoint>();
+
+        Imgproc.findContours(paper, contoursC, new Mat(), Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        Mat pImg = new Mat(paper.size(), CvType.CV_32SC1);
+        for (int i = 0; i < contoursC.size(); i++) {
+            Imgproc.drawContours(pImg, contoursC, i, new Scalar(255, 255, 255), -1);
+        }
+
+        pImg.convertTo(pImg, CvType.CV_8UC1);
+
+
+        int papNum=-1;
+        double lowestSCore=1000;
+        int papNum2=-1;
+        double lowestSCore2=1000;
+        for (int i = 0; i < shapes.size(); i++) {
+            Mat s = shapes.get(i);
+            //Imgcodecs.imwrite("Images/img" + i +".jpg", s);
+            double pAcc = Imgproc.matchShapes(s, pImg,3,0);
+            if (pAcc<lowestSCore){
+                lowestSCore2=lowestSCore;
+                papNum2=papNum;
+                lowestSCore=pAcc;
+                papNum=i;
+            }
+            //System.out.println("Object " + i + ": " + pAcc);
+        }
+
+        Log.i(TAG ,"Object " + papNum + " is the paper, with a score of " + lowestSCore);
+
+        Log.i(TAG ,"Second Object " + papNum2 + " is also the paper, with a score of " + lowestSCore2);
+
+        org.opencv.core.Point center = new org.opencv.core.Point(640,480);
+
+        if (papNum!=-1 && papNum2!=-1) {
+            if (Math.abs(locales.get(papNum).x - center.x) > Math.abs(locales.get(papNum2).x - center.x)) {
+                papNum = papNum2;
+            }
+        }
+
+        if (papNum!=-1) {
+            if (area == 1) {
+                area1[0] = locales.get(papNum).x;
+                area1[1] = locales.get(papNum).y;
+            }
+            if (area == 2) {
+                area2[0] = locales.get(papNum).x;
+                area2[1] = locales.get(papNum).y;
+            }
+            if (area == 3) {
+                area3[0] = locales.get(papNum).x;
+                area3[1] = locales.get(papNum).y;
+            }
+            if (area == 4) {
+                area4[0] = locales.get(papNum).x;
+                area4[1] = locales.get(papNum).y;
+            }
+            Log.i(TAG, "Paper is at point (" + locales.get(papNum).x + ", " + locales.get(papNum).y + ")");
+
+            org.opencv.core.Point po = locales.get(papNum);
+            Imgproc.cvtColor(image, image, Imgproc.COLOR_GRAY2RGB);
+
+            Imgproc.circle(image, locales.get(papNum), 10, new Scalar(0, 0, 255), -1);
+            api.saveMatImage(image, "area" + area + "loc.png");
+
+            int pa = 20;
+
+            Rect r = new Rect(bRect.get(papNum).x-pa, bRect.get(papNum).y-pa, bRect.get(papNum).width+2*pa, bRect.get(papNum).height+2*pa);
+
+            if (r.x+r.width>ogImage.width()){
+                r.width = r.width-22;
+            }
+            if (r.x<0){
+                r.x = 0;
+            }
+            if (r.y<0){
+                r.y = 0;
+            }
+            if (r.y+r.height>ogImage.height()){
+                r.height = r.height-22;
+            }
+
+            ogImage = undistort(ogImage);
+
+            return new Mat(ogImage, r);
+        }
+
+        return image;
+
     }
 }
